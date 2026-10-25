@@ -6,6 +6,8 @@ Deep Hook is a single HTML5 file (`index.html`). It runs in any modern mobile br
 
 ## How to play
 
+Open the website: https://coolprogramerglim.github.io/Deephook/ to play the game!
+
 1. **Aim and cast.** Touch and drag to aim. A dotted arc shows where the hook will land. Release to cast.
 2. **Steer.** While the hook sinks, drag left or right to steer it toward fish.
 3. **Reel in.** Tap to pull the line up early. It also reels in on its own when you reach the bottom or catch a fish.
