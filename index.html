@@ -105,7 +105,8 @@ const TYPES=[
  {v:1,r:11,c:'#cfe8f0',d:[.1,.45],s:70},
  {v:3,r:15,c:'#f2a541',d:[.25,.7],s:55},
  {v:6,r:21,c:'#6f8cff',d:[.5,.9],s:45},
- {v:15,r:17,c:'#ffd23f',d:[.8,1],s:95}
+ {v:15,r:17,c:'#ffd23f',d:[.8,1],s:95},
+ {v:-5,r:14,c:'#7bd62f',d:[.15,.85],s:60,p:1}
 ];
 
 /* ---------- Progress ---------- */
@@ -133,6 +134,7 @@ const L=()=>LV[cur];
 function spawnFish(){
   let r=Math.random(),i=0;const w=L().w;
   while(i<3&&r>w[i]){r-=w[i];i++}
+  if(Math.random()<.1+cur*.012)i=4;
   const t=TYPES[i],dir=Math.random()<.5?-1:1;
   fish.push({t,x:dir>0?-40:W+40,y:wl+60+rnd(t.d[0],t.d[1])*(H-wl-100),vx:dir*t.s*L().sp*rnd(.8,1.3),ph:rnd(0,6)});
 }
@@ -161,10 +163,11 @@ function finish(){
 const ui=document.getElementById('ui'),pz=document.getElementById('pz');
 const stars=n=>'<span class="star">'+'★'.repeat(n)+'☆'.repeat(3-n)+'</span>';
 const banner=(ADSENSE.client&&ADSENSE.bannerSlot)?'<div class="bn"><ins class="adsbygoogle" style="display:inline-block;width:320px;height:50px" data-ad-client="'+ADSENSE.client+'" data-ad-slot="'+ADSENSE.bannerSlot+'"></ins></div>':(ADSENSE.client||window.AndroidAds?'':'<div class="bn">Test banner ad 320×50</div>');
+function splash(){st='menu';pz.classList.add('hide');ui.innerHTML='<h1>Deep Hook</h1><p>Cast. Reel. Dive deeper.</p><button data-a="start">Tap to play</button>';ui.classList.remove('hide')}
 function menuScreen(){
   st='menu';pz.classList.add('hide');
   const total=P.stars.reduce((a,b)=>a+b,0);
-  ui.innerHTML='<h1>Deep Hook</h1><p>Cast your line, haul the deep ones, dodge the jellyfish.</p><p>'+total+' of '+LV.length*3+' stars · best round '+P.best+'</p>'+
+  ui.innerHTML='<h1>Deep Hook</h1><p>Cast your line, haul the deep ones, dodge the jellyfish and the green poison fish.</p><p>'+total+' of '+LV.length*3+' stars · best round '+P.best+'</p>'+
    '<button data-a="lvl:'+(Math.min(P.unlocked,LV.length)-1)+'">Play level '+Math.min(P.unlocked,LV.length)+'</button>'+
    '<button class="alt" data-a="levels">Choose level</button><button class="alt" data-a="shop">Shop ('+P.coins+' coins)</button><button class="alt" data-a="snd">Sound: '+(P.mute?'off':'on')+'</button>'+banner;
   ui.classList.remove('hide');
@@ -195,7 +198,8 @@ function pauseScreen(){
 ui.addEventListener('click',e=>{
   const b=e.target.closest('[data-a]');if(!b)return;
   const a=b.dataset.a;sfx(a==='menu'?330:520,.07,'triangle');
-  if(a==='menu')menuScreen();
+  if(a==='start'){menuScreen();tune([523,659,784])}
+  else if(a==='menu')menuScreen();
   else if(a==='levels')levelsScreen();
   else if(a==='shop')shopScreen();
   else if(a==='snd'){P.mute=P.mute?0:1;save();menuScreen()}
@@ -258,9 +262,10 @@ function update(dt){
   for(const f of fish){
     if(f.caught)continue;
     f.x+=f.vx*dt;f.ph+=dt*6;
-    if((hook==='drop'||hook==='reel')&&carry.length<capMax()&&Math.hypot(f.x-hx,f.y-hy)<f.t.r+catchR()){f.caught=true;carry.push(f);sfx(500+carry.length*80,.1,'square');buzz(10);if(hook==='drop')hook='reel'}
+    if(f.t.p){if((hook==='drop'||hook==='reel')&&Math.hypot(f.x-hx,f.y-hy)<f.t.r+8){f.caught=true;f.gone=1;const l=Math.min(score,5);score-=l;pops.push({x:hx,y:hy,txt:'Poison! -'+l,l:1.2});shake=.25;sfx(140,.35,'sawtooth');buzz(100)}}
+    else if((hook==='drop'||hook==='reel')&&carry.length<capMax()&&Math.hypot(f.x-hx,f.y-hy)<f.t.r+catchR()){f.caught=true;carry.push(f);sfx(500+carry.length*80,.1,'square');buzz(10);if(hook==='drop')hook='reel'}
   }
-  fish=fish.filter(f=>f.caught||(f.x>-80&&f.x<W+80));
+  fish=fish.filter(f=>f.caught?!f.gone:(f.x>-80&&f.x<W+80));
   bossT-=dt;
   if(!boss&&bossT<=0&&cur>=1)boss={x:-50,y:wl+(H-wl)*rnd(.5,.85),vx:55*L().sp,ph:0};
   if(boss&&hook!=='fight'){
@@ -291,6 +296,15 @@ function drawFish(x,y,r,c,dir,ph){
   ctx.fillStyle='#10202a';ctx.beginPath();ctx.arc(r*.7,-r*.15,Math.max(2,r*.13),0,7);ctx.fill();
   ctx.restore();
 }
+function poisonMark(f){
+  const d=f.vx>0?1:-1,r=f.t.r;
+  ctx.fillStyle='#5b2a86';
+  [[-.4,-.3],[.1,.35],[-.1,.05]].forEach(p=>{ctx.beginPath();ctx.arc(f.x+p[0]*r*1.3*d,f.y+p[1]*r,r*.2,0,7);ctx.fill()});
+  const ex=f.x+r*.7*d,ey=f.y-r*.15;
+  ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(ex-3,ey-3);ctx.lineTo(ex+3,ey+3);ctx.moveTo(ex+3,ey-3);ctx.lineTo(ex-3,ey+3);ctx.stroke();
+  ctx.strokeStyle='rgba(190,255,90,'+(.35+.25*Math.sin(performance.now()/200))+')';
+  ctx.beginPath();ctx.arc(f.x,f.y,r*1.9,0,7);ctx.stroke();
+}
 function draw(){
   const th=L().th;
   ctx.save();if(shake>0)ctx.translate(rnd(-4,4),rnd(-4,4));
@@ -309,7 +323,7 @@ function draw(){
     ctx.strokeStyle=th.jc||'#ff96c8';ctx.lineWidth=2;
     for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(j.x+i*8,j.y);ctx.quadraticCurveTo(j.x+i*8+Math.sin(j.ph*2+i)*5,j.y+12,j.x+i*8,j.y+24);ctx.stroke()}
   }
-  for(const f of fish)if(!f.caught)drawFish(f.x,f.y,f.t.r,f.t.c,f.vx>0?1:-1,f.ph);
+  for(const f of fish)if(!f.caught){drawFish(f.x,f.y,f.t.r,f.t.c,f.vx>0?1:-1,f.ph);if(f.t.p)poisonMark(f)}
   if(boss)drawFish(boss.x,boss.y,30,'#ff5a8a',1,boss.ph);
   if(st==='play'&&(hook==='ready'||hook==='cast')&&hot){const r=14+Math.sin(performance.now()/250)*4;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(hot.x,wl+6,r*1.8,r*.5,0,0,7);ctx.stroke()}
   if(st==='play'&&hook==='ready'&&aiming){ctx.setLineDash([6,6]);ctx.strokeStyle='rgba(255,255,255,.85)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(boatX+34,wl-14);ctx.quadraticCurveTo((boatX+34+aim)/2,wl-120,aim,wl);ctx.stroke();ctx.setLineDash([])}
@@ -342,10 +356,25 @@ function loop(now){
 }
 boatX=W*.18;hx=boatX+34;hy=wl-2;hook='ready';
 for(let k=0;k<8;k++){spawnFish();fish[k].x=rnd(0,W)}
-const MN=[262,330,392,523,392,330,294,392];let mi=0;
-setInterval(()=>{if(st==='menu'&&AC&&!P.mute&&!document.hidden)sfx(MN[mi++%MN.length],.9,'sine',.035)},700);
+const SC=[262,294,330,392,440,523,587,659,784,880];
+const MP=[0,2,4,5,4,2,1,3],GP=[0,4,2,4,5,4,2,1,0,4,2,5,6,5,4,2],BS=[131,131,165,147];
+let mi=0;
+function musicLoop(){
+  let ms=650;
+  try{
+    if(AC&&AC.state==='suspended')AC.resume();
+    if(!P.mute&&AC&&AC.state==='running'&&!document.hidden){
+      if(st==='play'){
+        ms=Math.max(140,250-cur*9);const i=mi++;
+        sfx(SC[GP[i%16]],.22,'triangle',.05);
+        if(i%4===0)sfx(BS[(i>>2)%4],.5,'sine',.07);
+      }else if(st!=='pause'){const i=mi++;sfx(SC[MP[i%8]],.9,'sine',.035)}
+    }
+  }catch(e){}
+  setTimeout(musicLoop,ms);
+}
 initAdSense();new MutationObserver(pushBanners).observe(ui,{childList:true});
-menuScreen();
+splash();musicLoop();
 requestAnimationFrame(t=>{last=t;loop(t)});
 </script>
 </body>
