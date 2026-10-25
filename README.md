@@ -2,7 +2,7 @@
 
 A touch-controlled fishing game for Android phones. Cast your line, steer the hook through the deep, haul in fish for points, and avoid the jellyfish and poison fish. Clear 12 levels, earn coins and upgrade your gear.
 
-Deep Hook is a single HTML5 file (`fishing-game.html`). It runs in any modern mobile browser and can also be packaged as an Android app with AdMob ads.
+Deep Hook is a single HTML5 file (`index.html`). It runs in any modern mobile browser and can also be packaged as an Android app with AdMob ads.
 
 ## How to play
 
@@ -104,7 +104,7 @@ Before publishing, replace the test ids (AdMob app id in `AndroidManifest.xml`, 
 
 ### Customising
 
-Everything is in `fishing-game.html` (copied to `app/src/main/assets/index.html` in the Android project):
+Everything is in `index.html` (copied to `app/src/main/assets/index.html` in the Android project):
 
 - `LV` holds the levels (name, goal, time, jellyfish count, fish speed, fish mix and colour theme).
 - `TYPES` holds the fish types and point values.
