@@ -1,0 +1,57 @@
+
+<header>
+  <b>switch lab</b>
+  <button class="tab on" data-t="sys">system</button>
+  <button class="tab" data-t="inp">input</button>
+  <button class="tab" data-t="fil">sd</button>
+  <button class="tab" data-t="sto">storage</button>
+  <button class="tab" data-t="nx">nx</button>
+  <button class="tab" data-t="js">js</button>
+  <button class="tab" data-t="log">log</button>
+</header>
+<main>
+<section id="sys" class="on">
+  <h2>capability matrix</h2>
+  <p class="hint">Green means the applet exposes it. Red is a hard wall. Everything here is read-only probing.</p>
+  <table id="matrix"></table>
+  <h2 style="margin-top:18px">renderer</h2>
+  <table id="gl"></table>
+  <div class="row"><button class="act" id="bench">run 5s gpu stress</button>
+  <button class="act" id="beep">audio test</button>
+  <button class="act" id="full">fullscreen</button>
+  <button class="act" id="wake">wake lock</button></div>
+  <pre id="benchout">idle</pre>
+</section>
+<section id="inp">
+  <h2>gamepad lab</h2>
+  <p class="hint">If the applet maps controllers, they appear here. Polls rAF, no permissions.</p>
+  <div class="row"><button class="act" id="padstart">start polling</button><button class="act" id="padstop">stop</button></div>
+  <div id="pads"></div>
+</section>
+<section id="fil">
+  <h2>sd card reader</h2>
+  <p class="hint">The file picker reaches the SD card. Files are read locally, nothing is uploaded.</p>
+  <input type="file" id="pick">
+  <pre id="filedump">no file</pre>
+  <div class="row"><button class="act" id="save">save buffer back to sd</button></div>
+</section>
+<section id="sto">
+  <h2>storage</h2>
+  <p class="hint">localStorage may survive applet restarts. Treat it as a scratchpad.</p>
+  <input type="text" id="skey" placeholder="key">
+  <textarea id="sval" placeholder="value"></textarea>
+  <div class="row"><button class="act" id="sset">write</button><button class="act" id="sget">read</button>
+  <button class="act" id="slist">list all</button><button class="act danger" id="sclear">clear</button></div>
+  <pre id="sout">-</pre>
+</section>
+<section id="nx">
+  <h2>window.nx bridge</h2>
+  <p class="hint">The JsExtension, if enabled for this applet. Presence is worth knowing for exploit work.</p>
+  <pre id="nxout">probing...</pre>
+  <input type="text" id="nxmsg" placeholder="message to native side">
+  <div class="row"><button class="act" id="nxsend">send</button></div>
+</section>
+<section id="js">
+  <h2>eval</h2>
+  <p class="hint">Runs in page scope. Result printed, exceptions caught.</p>
+  <textarea id="code">document.body.style</textarea></section></main>
